@@ -1,3 +1,4 @@
+// using Fetch on the random user API, with Promises and other fp techniques
 // const fetch = require('node-fetch')
 function curry( fn ) {
   return (function resolver() {

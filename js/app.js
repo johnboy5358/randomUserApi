@@ -16,6 +16,7 @@ const map = fn => coll => Array.prototype.map.call(coll, fn)
 const join = init => data => Array.prototype.join.call(data, init)
 const toStr = join('')
 
+// fn:: string -> int -> promise[json]
 const httpGetUsers = (url,howmany) => {
   const res = fetch(url+"/?results=" + String(howmany))
   return res
@@ -29,8 +30,10 @@ const httpGetUsers = (url,howmany) => {
     })
 }
 
+// fn:: Promise -> domElement
 const app = (prom, targetId) => {
 
+  // fn:: object -> String
   const nameTemplate = v => {
     return (`
     <tr class="user">
@@ -41,6 +44,7 @@ const app = (prom, targetId) => {
     </tr>`)
   }
 
+  // fn:: object -> String
   const moreDataTemplate = v => {
     return (`
     <tr class="user">
@@ -53,19 +57,20 @@ const app = (prom, targetId) => {
     </tr>`)
   }
 
-  
+  // fn:: fn -> Promise -> Promise(String)
   const generateDomString = (templateFn, prom) => {
     return prom.then(ary => {
       // pass on a Promise containing a dom string
-      // :: [] -> Promise(String)
       return pipe(
         templateFn,
         toStr
       )(ary)
     })
   }
+  // curried version of generateDomString.
   const cGenerateDomString = curry(generateDomString)
   
+  // fn:: domElement -> Promise -> fn -> Promise.
   const makeBtnClickHandler = (listen, prom, template) => {
     document.getElementById(listen).addEventListener('click', ()=>{
       cGenerateDomString(template, prom).then(data => {
@@ -78,12 +83,13 @@ const app = (prom, targetId) => {
   
   const mapNameTemplate = map(nameTemplate)
   const mapMoreTemplate = map(moreDataTemplate)
-  const domStringName = cGenerateDomString(mapNameTemplate)
+  const domStringNameTemplate = cGenerateDomString(mapNameTemplate)
 
-  // Show basic template when app initializes.
-  domStringName(prom).then(ds => targ.innerHTML = ds)
+  // Show basic template when app initializes - just name data.
+  domStringNameTemplate(prom).then(ds => targ.innerHTML = ds)
 
-  // generate views depending on button click.
+  // generate two button click handlers.
+  // - one for a names view, the other for a more detailed view.
   makeBtnClickHandler('names', prom, mapNameTemplate) && makeBtnClickHandler('more', prom, mapMoreTemplate)
     .catch(err => {
       console.log(err.message)

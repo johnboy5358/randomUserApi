@@ -1,15 +1,12 @@
 // using Fetch on the random user API, with Promises and other fp techniques
 // const fetch = require('node-fetch')
-function curry( fn ) {
-  return (function resolver() {
-    var memory = Array.prototype.slice.call( arguments )
-    return function() {
-      var local = memory.slice(), next
-      Array.prototype.push.apply( local, arguments )
-      next = local.length >= fn.length ? fn : resolver
-      return next.apply( null, local )
-    }
-  }())
+function curry(f, n) {
+  const args = [...arguments]
+  if (typeof n === 'undefined')
+      args[1] = f.length
+  return (n === args.length - 2)
+    ? f.apply(null, args.slice(2))
+    : function() { return curry.apply(null, args.concat([...arguments])) }
 }
 const pipe = (...fns) => x => fns.reduce((v, f) => f(v), x)
 const map = fn => coll => Array.prototype.map.call(coll, fn)
